@@ -1,8 +1,9 @@
-import React, { useEffect, useReducer, useState } from 'react';
-
+import React, { useContext, useEffect, useReducer, useState } from 'react';
 import Card from '../UI/Card/Card';
 import classes from './Login.module.css';
 import Button from '../UI/Button/Button';
+import AuthContext from '../store/auth-context';
+import Input from '../UI/Input/Input';
 
 const emailReducer = (state, action) => {
   if (action.type === 'USER_INPUT') {
@@ -28,8 +29,8 @@ const passReducer = (state, action) => {
 const Login = (props) => {
   // const [enteredEmail, setEnteredEmail] = useState('');
   // const [emailIsValid, setEmailIsValid] = useState();
-  const [enteredCollage, setEnteredCollage] = useState('');
-  const [validEnteredCollage, setValidEnteredCollage] = useState('');
+  //const [enteredCollage, setEnteredCollage] = useState('');
+  //const [validEnteredCollage, setValidEnteredCollage] = useState('');
   // const [enteredPassword, setEnteredPassword] = useState('');
   // const [passwordIsValid, setPasswordIsValid] = useState();
   const [formIsValid, setFormIsValid] = useState(false);
@@ -47,6 +48,8 @@ const Login = (props) => {
       isValid: null
     }
   );
+
+  const authCtx = useContext(AuthContext);
   // useEffect(()=>{
   //   console.log("Effect");
   // },)//runs on every time component reneder.
@@ -54,18 +57,21 @@ const Login = (props) => {
   //   console.log("Effect");
   // },[])//runs only one time.
 
+  const {isValid : emailIsValid} = emailState;
+  const {isValid : passwordIsValid} = passState;
+
   useEffect(() => {
     const indentifier = setTimeout(()=>{
       console.log('Cheking form validity!');
       setFormIsValid(
-        emailState.isValid && passState.isValid && enteredCollage.trim().length !== 0
+        emailState.isValid && passState.isValid
       );
     },500)
     return ()=>{
       console.log('CLEANUP');
       clearTimeout(indentifier);
     }
-  }, [emailState.isValid, passState.isValid, enteredCollage]);
+  }, [emailState.isValid, passState.isValid]);
 
   const emailChangeHandler = (event) => {
     //setEnteredEmail(event.target.value);
@@ -85,9 +91,9 @@ const Login = (props) => {
     // );
   };
 
-  const collageChnageHAndler = (event) => {
-    setEnteredCollage(event.target.value);
-  }
+  // const collageChnageHAndler = (event) => {
+  //   setEnteredCollage(event.target.value);
+  // }
 
   const validateEmailHandler = () => {
     //setEmailIsValid(enteredEmail.includes('@'));
@@ -99,19 +105,37 @@ const Login = (props) => {
     dispatchPass({ type: 'INPUT_BLUR' });
   };
 
-  const validateCollageHandler = () => {
-    setValidEnteredCollage(enteredCollage.trim().length !== 0);
-  };
+  // const validateCollageHandler = () => {
+  //   setValidEnteredCollage(enteredCollage.trim().length !== 0);
+  // };
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(emailState.value, passState.value);
+    authCtx.onLogIn(emailState.value, passState.value);
   };
 
   return (
     <Card className={classes.login}>
       <form onSubmit={submitHandler}>
-        <div
+      <Input
+          type="email"
+          id="email"
+          label = "E-Mail"
+          isValid = {emailIsValid}
+          value={emailState.value}
+          onChange={emailChangeHandler}
+          onBlur={validateEmailHandler}
+        />
+        <Input
+          type="password"
+          id="password"
+          label = "Password"
+          isValid = {passwordIsValid}
+          value={passState.value}
+          onChange={passwordChangeHandler}
+          onBlur={validatePasswordHandler}
+        />
+        {/* <div
           className={`${classes.control} ${emailState.isValid === false ? classes.invalid : ''
             }`}
         >
@@ -149,7 +173,7 @@ const Login = (props) => {
             onChange={collageChnageHAndler}
             onBlur={validateCollageHandler}
           />
-        </div>
+        </div> */}
         <div className={classes.actions}>
           <Button type="submit" className={classes.btn} disabled={!formIsValid}>
             Login
